@@ -19,6 +19,7 @@ import { BorderBeam } from "@/components/magicui/border-beam";
 import { Input } from "@/components/ui/input";
 import Spinner from "@/components/spinner";
 import Links from "@/components/links";
+import { CodeSyntaxDemo } from "@/components/code-editor";
 
 const urlSchema = z.string().url();
 
@@ -60,12 +61,24 @@ function organizeFiles(files: TemplateFile[]): FileNode[] {
   return root;
 }
 
-function FileTree({ node, level = 0 }: { node: FileNode; level?: number }) {
+function FileTree({
+  node,
+  level = 0,
+  onSelect,
+}: {
+  node: FileNode;
+  level?: number;
+  onSelect: (path: string) => void;
+}) {
   const [isOpen, setIsOpen] = useState(level < 1);
 
   return (
     <div className="space-y-1">
-      <motion.div initial={false} className="flex items-center gap-2 text-sm">
+      <motion.div
+        initial={false}
+        className="flex items-center gap-2 text-sm"
+        onClick={() => onSelect(node.path)}
+      >
         {node.type === "directory" && (
           <motion.button
             initial={false}
@@ -111,7 +124,12 @@ function FileTree({ node, level = 0 }: { node: FileNode; level?: number }) {
                 return a.name.localeCompare(b.name);
               })
               .map((child) => (
-                <FileTree key={child.path} node={child} level={level + 1} />
+                <FileTree
+                  key={child.path}
+                  node={child}
+                  level={level + 1}
+                  onSelect={onSelect}
+                />
               ))}
           </motion.div>
         )}
@@ -124,6 +142,10 @@ export default function GithubDir() {
   const [files, setFiles] = useState<TemplateFile[] | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [url, setUrl] = useState<string | null>(null);
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [fileWithContent, setFileWithContent] = useState<TemplateFile[] | null>(
+    null
+  );
 
   const [scope, animate] = useAnimate<HTMLFormElement>();
 
@@ -171,6 +193,8 @@ export default function GithubDir() {
           });
         }
 
+        setFileWithContent(results);
+
         return results;
       } catch (error) {
         console.error("Error fetching contents:", error);
@@ -180,6 +204,8 @@ export default function GithubDir() {
     staleTime: 1000 * 60 * 60, // 1 hour
     enabled: !!files,
   });
+
+  console.log(selectedPath, fileWithContent);
 
   const downloadDir = useMutation({
     mutationFn: async ({
@@ -267,7 +293,11 @@ export default function GithubDir() {
         <div className="rounded-lg border bg-card p-4">
           <div className="space-y-2">
             {fileTree.map((node) => (
-              <FileTree key={node.path} node={node} />
+              <FileTree
+                key={node.path}
+                node={node}
+                onSelect={setSelectedPath}
+              />
             ))}
           </div>
         </div>
@@ -276,128 +306,154 @@ export default function GithubDir() {
   };
 
   return (
-    <div className="min-h-[70dvh] px-5 flex items-center py-24 flex-col gap-2 justify-center">
-      <Links />
+    <div className="grid grid-cols-2 pb-24 items-start">
+      <div className="min-h-[70dvh] px-5 flex items-center flex-col pt-24 gap-2 justify-center">
+        <Links />
 
-      <MotionConfig transition={{ duration: 0.5, type: "spring", bounce: 0 }}>
-        <motion.div
-          layout="position"
-          className="flex flex-col relative z-20 gap-2 items-center mb-4 w-full max-w-xl"
-        >
-          <motion.div layout="position">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-40"
-            >
-              <path
-                d="M12 2C10.6868 2 9.38642 2.25866 8.17317 2.7612C6.95991 3.26375 5.85752 4.00035 4.92893 4.92893C3.05357 6.8043 2 9.34784 2 12C2 16.42 4.87 20.17 8.84 21.5C9.34 21.58 9.5 21.27 9.5 21V19.31C6.73 19.91 6.14 17.97 6.14 17.97C5.68 16.81 5.03 16.5 5.03 16.5C4.12 15.88 5.1 15.9 5.1 15.9C6.1 15.97 6.63 16.93 6.63 16.93C7.5 18.45 8.97 18 9.54 17.76C9.63 17.11 9.89 16.67 10.17 16.42C7.95 16.17 5.62 15.31 5.62 11.5C5.62 10.39 6 9.5 6.65 8.79C6.55 8.54 6.2 7.5 6.75 6.15C6.75 6.15 7.59 5.88 9.5 7.17C10.29 6.95 11.15 6.84 12 6.84C12.85 6.84 13.71 6.95 14.5 7.17C16.41 5.88 17.25 6.15 17.25 6.15C17.8 7.5 17.45 8.54 17.35 8.79C18 9.5 18.38 10.39 18.38 11.5C18.38 15.32 16.04 16.16 13.81 16.41C14.17 16.72 14.5 17.33 14.5 18.26V21C14.5 21.27 14.66 21.59 15.17 21.5C19.14 20.16 22 16.42 22 12C22 10.6868 21.7413 9.38642 21.2388 8.17317C20.7362 6.95991 19.9997 5.85752 19.0711 4.92893C18.1425 4.00035 17.0401 3.26375 15.8268 2.7612C14.6136 2.25866 13.3132 2 12 2Z"
-                fill="url(#paint0_linear_118_2)"
-              />
-              <defs>
-                <linearGradient
-                  id="paint0_linear_118_2"
-                  x1="12"
-                  y1="2"
-                  x2="12"
-                  y2="21.5155"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop offset="40%" stopColor="var(--foreground)" />
-                  <stop offset="100%" stopColor="var(--muted-foreground)" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </motion.div>
-          <form
-            ref={scope}
-            className={cn(
-              "rounded-full relative border h-12 w-full focus-within:ring-4 focus-within:ring-ring/30 focus-within:scale-[1.02] transition-[scale,box-shadow,border-color] duration-200 ease-in-out flex items-stretch p-0.5 max-w-xl",
-              downloadDir.isError &&
-                "border-destructive focus-within:ring-destructive/10"
-            )}
-            onSubmit={onSubmit}
+        <MotionConfig transition={{ duration: 0.5, type: "spring", bounce: 0 }}>
+          <motion.div
+            layout="position"
+            className="flex flex-col relative z-20 gap-2 items-center mb-4 w-full max-w-xl"
           >
-            {downloadDir.isPending && <BorderBeam />}
-
-            <input
-              name="url"
-              type="text"
-              placeholder="https://github.com/username/repo"
-              className="grow px-4 outline-none transition-colors duration-300 rounded-full"
-              value={url || ""}
-              onChange={(e) => {
-                setUrl(e.target.value);
-              }}
-            />
-            <Button
-              variant="outline"
-              className="rounded-full h-auto transition-colors duration-300 hover:bg-muted"
+            <motion.div layout="position">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="size-40"
+              >
+                <path
+                  d="M12 2C10.6868 2 9.38642 2.25866 8.17317 2.7612C6.95991 3.26375 5.85752 4.00035 4.92893 4.92893C3.05357 6.8043 2 9.34784 2 12C2 16.42 4.87 20.17 8.84 21.5C9.34 21.58 9.5 21.27 9.5 21V19.31C6.73 19.91 6.14 17.97 6.14 17.97C5.68 16.81 5.03 16.5 5.03 16.5C4.12 15.88 5.1 15.9 5.1 15.9C6.1 15.97 6.63 16.93 6.63 16.93C7.5 18.45 8.97 18 9.54 17.76C9.63 17.11 9.89 16.67 10.17 16.42C7.95 16.17 5.62 15.31 5.62 11.5C5.62 10.39 6 9.5 6.65 8.79C6.55 8.54 6.2 7.5 6.75 6.15C6.75 6.15 7.59 5.88 9.5 7.17C10.29 6.95 11.15 6.84 12 6.84C12.85 6.84 13.71 6.95 14.5 7.17C16.41 5.88 17.25 6.15 17.25 6.15C17.8 7.5 17.45 8.54 17.35 8.79C18 9.5 18.38 10.39 18.38 11.5C18.38 15.32 16.04 16.16 13.81 16.41C14.17 16.72 14.5 17.33 14.5 18.26V21C14.5 21.27 14.66 21.59 15.17 21.5C19.14 20.16 22 16.42 22 12C22 10.6868 21.7413 9.38642 21.2388 8.17317C20.7362 6.95991 19.9997 5.85752 19.0711 4.92893C18.1425 4.00035 17.0401 3.26375 15.8268 2.7612C14.6136 2.25866 13.3132 2 12 2Z"
+                  fill="url(#paint0_linear_118_2)"
+                />
+                <defs>
+                  <linearGradient
+                    id="paint0_linear_118_2"
+                    x1="12"
+                    y1="2"
+                    x2="12"
+                    y2="21.5155"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="40%" stopColor="var(--foreground)" />
+                    <stop offset="100%" stopColor="var(--muted-foreground)" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </motion.div>
+            <form
+              ref={scope}
+              className={cn(
+                "rounded-full relative border h-12 w-full focus-within:ring-4 focus-within:ring-ring/30 focus-within:scale-[1.02] transition-[scale,box-shadow,border-color] duration-200 ease-in-out flex items-stretch p-0.5 max-w-xl",
+                downloadDir.isError &&
+                  "border-destructive focus-within:ring-destructive/10"
+              )}
+              onSubmit={onSubmit}
             >
-              Create
-            </Button>
-          </form>
-          <div className="w-full min-h-8">
-            {(downloadDir.error?.message === "Missing token" ||
-              downloadDir.error?.message ===
-                "GitHub token is invalid or expired") && (
-              <Input
-                placeholder="GitHub Token"
-                className="w-full mb-2"
-                defaultValue={token || ""}
+              {downloadDir.isPending && <BorderBeam />}
+
+              <input
+                name="url"
+                type="text"
+                placeholder="https://github.com/username/repo"
+                className="grow px-4 outline-none transition-colors duration-300 rounded-full"
+                value={url || ""}
                 onChange={(e) => {
-                  const value = e.target.value;
-                  setToken(value);
-                  window.localStorage.setItem("github-token", value);
-                  downloadDir.mutate({ url, isToken: true });
+                  setUrl(e.target.value);
                 }}
               />
-            )}
-            <p
-              className={cn(
-                "text-sm text-destructive px-4 opacity-0 transition-opacity duration-300",
-                downloadDir.isError && "opacity-100"
+              <Button
+                variant="outline"
+                className="rounded-full h-auto transition-colors duration-300 hover:bg-muted"
+              >
+                Create
+              </Button>
+            </form>
+            <div className="w-full min-h-8">
+              {(downloadDir.error?.message === "Missing token" ||
+                downloadDir.error?.message ===
+                  "GitHub token is invalid or expired") && (
+                <Input
+                  placeholder="GitHub Token"
+                  className="w-full mb-2"
+                  defaultValue={token || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setToken(value);
+                    window.localStorage.setItem("github-token", value);
+                    downloadDir.mutate({ url, isToken: true });
+                  }}
+                />
               )}
-            >
-              {downloadDir.error?.message}
-            </p>
+              <p
+                className={cn(
+                  "text-sm text-destructive px-4 opacity-0 transition-opacity duration-300",
+                  downloadDir.isError && "opacity-100"
+                )}
+              >
+                {downloadDir.error?.message}
+              </p>
+            </div>
+          </motion.div>
+        </MotionConfig>
+        {renderFiles()}
+
+        {/* <nav className="fixed right-0 bottom-0 left-0 z-50 flex isolate h-22 items-center justify-center">
+          <div className="absolute right-0 bottom-0 left-0 -z-10 h-22 [--color:var(--background)] *:absolute *:inset-0 ">
+            <div className="bg-[var(--color)]/20 backdrop-blur-[0.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_0%,#000_10%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[2px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_10%,#000_20%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[4.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_20%,#000_30%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[8px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_30%,#000_40%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[12.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_40%,#000_50%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[18px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_50%,#000_60%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[24.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_60%,#000_70%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[32px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_70%,#000_80%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[40.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_80%,#000_90%)]" />
+            <div className="bg-[var(--color)]/20 backdrop-blur-[50px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_90%,#000_100%)]" />
+            <div className="[background:linear-gradient(180deg,rgba(9,9,11,0.00)_0%,var(--background,#09090B)_100%)]" />
           </div>
-        </motion.div>
-      </MotionConfig>
-      {renderFiles()}
 
-      <nav className="fixed right-0 bottom-0 left-0 z-50 flex isolate h-22 items-center justify-center">
-        <div className="absolute right-0 bottom-0 left-0 -z-10 h-22 [--color:var(--background)] *:absolute *:inset-0 ">
-          <div className="bg-[var(--color)]/20 backdrop-blur-[0.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_0%,#000_10%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[2px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_10%,#000_20%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[4.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_20%,#000_30%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[8px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_30%,#000_40%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[12.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_40%,#000_50%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[18px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_50%,#000_60%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[24.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_60%,#000_70%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[32px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_70%,#000_80%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[40.5px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_80%,#000_90%)]" />
-          <div className="bg-[var(--color)]/20 backdrop-blur-[50px] [mask-image:linear-gradient(180deg,rgba(0,0,0,0.00)_90%,#000_100%)]" />
-          {/* <div className="[background:linear-gradient(180deg,rgba(9,9,11,0.00)_0%,var(--background,#09090B)_100%)]" /> */}
-        </div>
+          <Button
+            variant="outline"
+            className={cn(
+              "rounded-full min-w-24 transition-opacity duration-100",
+              !files && "opacity-0 pointer-events-none"
+            )}
+            size={"lg"}
+            onClick={async () => {
+              if (contentsQuery.data) {
+                await downloadAsZip(contentsQuery.data);
+              }
+            }}
+          >
+            {contentsQuery.isFetching ? <Spinner /> : "Export"}
+          </Button>
+        </nav> */}
+      </div>
+      <CodeSyntaxDemo
+        code={
+          fileWithContent?.find((file) => file.path === selectedPath)
+            ?.content ||
+          fileWithContent?.[0].content ||
+          ""
+        }
+        filename={
+          fileWithContent?.find((file) => file.path === selectedPath)?.path ||
+          fileWithContent?.[0].path ||
+          ""
+        }
+        onValueChange={(value) => {
+          if (!fileWithContent) return;
 
-        <Button
-          variant="outline"
-          className={cn(
-            "rounded-full min-w-24 transition-opacity duration-100",
-            !files && "opacity-0 pointer-events-none"
-          )}
-          size={"lg"}
-          onClick={async () => {
-            if (contentsQuery.data) {
-              await downloadAsZip(contentsQuery.data);
+          const updatedFiles = fileWithContent.map((file) => {
+            if (file.path === selectedPath) {
+              return { ...file, content: value };
             }
-          }}
-        >
-          {contentsQuery.isFetching ? <Spinner /> : "Export"}
-        </Button>
-      </nav>
+            return file;
+          });
+          setFileWithContent(updatedFiles);
+        }}
+      />
     </div>
   );
 }
