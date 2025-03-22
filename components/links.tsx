@@ -3,9 +3,7 @@ import React from "react";
 import { buttonVariants } from "./ui/button";
 import { Github } from "lucide-react";
 
-type Props = {};
-
-export default function Links({}: Props) {
+export default function Links() {
   return (
     <div className="flex gap-2 fixed top-4 right-4">
       <Link

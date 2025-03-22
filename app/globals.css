@@ -43,6 +43,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --animate-aurora: aurora 60s linear infinite;
+  --animate-fade-in: fade-in 0.4s ease-in-out forwards;
 
   @keyframes aurora {
     from {
@@ -50,6 +51,17 @@
     }
     to {
       background-position: 350% 50%, 350% 50%;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      filter: blur(6px);
+      opacity: 0;
+    }
+    to {
+      filter: blur(0px);
+      opacity: 1;
     }
   }
 }
