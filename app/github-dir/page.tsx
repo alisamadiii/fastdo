@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { Input } from "@/components/ui/input";
+import Spinner from "@/components/spinner";
 
 const urlSchema = z.string().url();
 
@@ -389,7 +390,10 @@ export default function GithubDir() {
 
         <Button
           variant="outline"
-          className="rounded-full"
+          className={cn(
+            "rounded-full min-w-24 transition-opacity duration-100",
+            !files && "opacity-0 pointer-events-none"
+          )}
           size={"lg"}
           onClick={async () => {
             if (contentsQuery.data) {
@@ -397,7 +401,7 @@ export default function GithubDir() {
             }
           }}
         >
-          Export
+          {contentsQuery.isFetching ? <Spinner /> : "Export"}
         </Button>
       </nav>
     </div>
