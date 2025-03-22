@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryClientProviders from "@/providers/react-query";
+import PlausibleProvider from "next-plausible";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -135,7 +136,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryClientProviders>{children}</QueryClientProviders>
+        <QueryClientProviders>
+          <PlausibleProvider domain="fastdo.app">{children}</PlausibleProvider>
+        </QueryClientProviders>
       </body>
     </html>
   );
