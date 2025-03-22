@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { Input } from "@/components/ui/input";
 import Spinner from "@/components/spinner";
+import Links from "@/components/links";
 
 const urlSchema = z.string().url();
 
@@ -285,7 +286,9 @@ export default function GithubDir() {
   };
 
   return (
-    <div className="min-h-[70dvh] flex items-center py-24 flex-col gap-2 justify-center">
+    <div className="min-h-[70dvh] px-5 flex items-center py-24 flex-col gap-2 justify-center">
+      <Links />
+
       <MotionConfig transition={{ duration: 0.5, type: "spring", bounce: 0 }}>
         <motion.div
           layout="position"

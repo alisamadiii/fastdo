@@ -38,18 +38,12 @@ export default function Home() {
 
           <div className="mt-6 flex items-center gap-4 md:mt-0">
             <Link
-              href="#"
+              href="https://github.com/alisamadiii/fastdo"
               className="text-neutral-500 hover:text-neutral-900 transition-colors"
+              target="_blank"
             >
               <Github className="h-5 w-5" />
               <span className="sr-only">GitHub</span>
-            </Link>
-            <Link
-              href="#"
-              className="text-neutral-500 hover:text-neutral-900 transition-colors"
-            >
-              <Code className="h-5 w-5" />
-              <span className="sr-only">Documentation</span>
             </Link>
           </div>
         </div>
@@ -160,7 +154,7 @@ function GithubToolCard() {
 function ImageToolCard() {
   return (
     <div className="relative hover:-translate-y-0.5 transition-all duration-300">
-      <Link href="#" className="block">
+      <Link href="/image-tools" className="block">
         <Card className="overflow-hidden border-0 shadow-sm p-0">
           <div className="relative h-32 bg-gradient-to-r from-emerald-600 to-teal-500">
             <div className="absolute right-4 top-4 grid grid-cols-2 gap-1">
