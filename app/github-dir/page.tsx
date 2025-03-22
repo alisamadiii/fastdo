@@ -186,6 +186,7 @@ export default function GithubDir() {
         throw error;
       }
     },
+    staleTime: 1000 * 60 * 60, // 1 hour
     enabled: !!files,
   });
 
